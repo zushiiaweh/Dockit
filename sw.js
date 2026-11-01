@@ -1,6 +1,6 @@
 // Dockit service worker. Change VERSION whenever you upload a new index.html.
-const VERSION = 'dockit-v1.3.8';
-const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'icon-dark-192.png', 'icon-dark-512.png', 'apple-touch-icon.png', 'privacy.html'];
+const VERSION = 'dockit-v1.3.9';
+const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'icon-dark-192.png', 'icon-dark-512.png', 'apple-touch-icon.png', 'privacy.html', 'terms.html'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
