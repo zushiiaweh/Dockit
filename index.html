@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#3d3a3a">
+<meta name="theme-color" content="#2f2d2d">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png" media="(prefers-color-scheme: light)">
 <link rel="icon" href="icon-dark-192.png" media="(prefers-color-scheme: dark)">
@@ -67,8 +67,8 @@ button{font:inherit;font-weight:800;cursor:pointer;border:0;color:inherit}
 .bx{height:200px;display:grid;place-items:center;position:relative;margin:10px 0}#bb{position:absolute;width:150px;height:150px;border-radius:32px;background:#5aaeea55;border:5px solid #5aaeea;transform:scale(.6);transition:transform 4s linear}.bx b{position:relative;font-size:22px}
 .er{color:#e43a26;font-size:13.5px;min-height:18px;margin:2px 2px 8px}
 .lgc{background:var(--card2);border-radius:30px;padding:20px;margin-top:6px;box-shadow:0 6px 0 var(--edge),0 16px 24px var(--sh)}
-#splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink);transition:opacity .6s}
-#splash.hide{opacity:0;pointer-events:none}#splash h2,#splash p{position:absolute;left:0;right:0;text-align:center}#splash h2{top:calc(50% + 140px)}#splash p{top:calc(50% + 203px)}.an2{animation:grow .9s cubic-bezier(.3,1.5,.5,1) both,bob2 2.4s ease-in-out .9s infinite;filter:drop-shadow(0 14px 10px rgba(0,0,0,.22))}@keyframes grow{0%{transform:scale(1)}55%{transform:scale(1.7) rotate(-8deg)}100%{transform:scale(1.5)}}@keyframes bob2{0%,100%{transform:scale(1.5)}50%{transform:scale(1.5) translateY(-6px) rotate(-3deg)}}#splash h2{font-size:46px;font-weight:900;margin:10px 0 0;letter-spacing:-1px;animation:fi 1s .9s both}#splash p{margin:2px 0 0;font-size:19px;color:var(--mut);animation:fi 1s 1.2s both}
+#splash{position:fixed;inset:0;z-index:100;background:#2f2d2d;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#f6f6f6;transition:opacity .6s}
+#splash.hide{opacity:0;pointer-events:none}#splash h2,#splash p{position:absolute;left:0;right:0;text-align:center}#splash h2{top:calc(50% + 140px)}#splash p{top:calc(50% + 203px)}.an2{animation:grow .9s cubic-bezier(.3,1.5,.5,1) both,bob2 2.4s ease-in-out .9s infinite;filter:drop-shadow(0 14px 10px rgba(0,0,0,.22))}@keyframes grow{0%{transform:scale(1)}55%{transform:scale(1.7) rotate(-8deg)}100%{transform:scale(1.5)}}@keyframes bob2{0%,100%{transform:scale(1.5)}50%{transform:scale(1.5) translateY(-6px) rotate(-3deg)}}#splash h2{font-size:46px;font-weight:900;margin:10px 0 0;letter-spacing:-1px;animation:fi 1s .9s both}#splash p{margin:2px 0 0;font-size:19px;color:#c2c2c2;animation:fi 1s 1.2s both}
 .an{animation:pop .8s cubic-bezier(.3,1.6,.5,1) both,bob 2.4s ease-in-out .9s infinite;filter:drop-shadow(0 14px 10px rgba(0,0,0,.22))}@keyframes pop{from{transform:scale(0) rotate(-18deg)}}@keyframes bob{50%{transform:translateY(-9px) rotate(-3deg)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
 .pw{position:relative}.pw .in{padding-right:74px}.eye{position:absolute;right:8px;top:8px;background:none;color:var(--mut);padding:8px 10px;font-size:13px}.sh h3,.fi b{word-break:break-word}
@@ -228,7 +228,8 @@ if(t>=tot){clearInterval(iv);o.remove();H()[k]=1;after();toast("Well done");retu
 if(br){const p=Math.floor(t/4)%4,c=t%4;if(c==0){bb.style.transform=p==0?"scale(1)":p==2?"scale(.6)":bb.style.transform}bt.textContent=["Breathe in","Hold","Breathe out","Hold"][p]+" "+(4-c)}
 else{if(t%8==0)bb.style.transform="scale(1)";if(t%8==4)bb.style.transform="scale(.6)";bt.textContent=(t%8<4?"Breathe in":"Breathe out")+" · "+(tot-t)+"s"}t++},1000)}}
 function go(n,id){view={n,id,side:"front"};render();scrollTo(0,0)}
-function render(){try{document.querySelector('meta[name="theme-color"]').content=isDark()?"#3d3a3a":"#ffffff"}catch(e){}const a=$("#app");if(!termsOK()){a.innerHTML=termsHtml();return} if(!U){uT=0;a.innerHTML=loginHtml();return}
+function bars(){try{if($("#splash"))return;document.querySelector('meta[name="theme-color"]').content=isDark()?"#3d3a3a":"#ffffff"}catch(e){}}
+function render(){bars();const a=$("#app");if(!termsOK()){a.innerHTML=termsHtml();return} if(!U){uT=0;a.innerHTML=loginHtml();return}
 const LK=["folders","folder"].includes(view.n)||(pro()&&!!view.tf);if(LK&&!unl()){view={n:"home"};setTimeout(unlockSheet,0)}else if(LK)uT=Date.now();
 a.innerHTML=view.n=="home"?home():view.n=="folders"?folders():view.n=="meds"?medsPage():view.n=="profile"?profilePage():view.n=="ys"?ysPage():(view.n=="track"||view.n=="ftrack")?trackPage():view.n=="mood"?moodPage():view.n=="meals"?mealPage():view.n=="weight"?weightPage():view.n=="sleep"?sleepPage():view.n=="hab"?habPage():view.n=="insights"?insightsPage():fold();if(U&&!D.mode&&!modeOpen){modeOpen=1;setTimeout(()=>modeSheet(true),0)}}
 function cards(){const q=(view.q||"").toLowerCase(),L=FL().filter(f=>f.n.toLowerCase().includes(q)).sort((a,b)=>pro()?worst(b)-worst(a):((a.t=="Myself"?0:1)-(b.t=="Myself"?0:1))||a.n.localeCompare(b.n));
@@ -750,7 +751,7 @@ o.querySelectorAll(".yc button").forEach(b=>b.onclick=()=>{ty=b.dataset.t;o.quer
 $("#ok").onclick=async()=>{if(!file){$("#fe").textContent="Please choose a file first";return}const id=uid();try{await fput(id,file)}catch(e){$("#fe").textContent="Couldn’t save the file on this device.";return}f.rep=f.rep||[];const r={id:uid(),ty,dt:$("#fdte").value||iso(),tm:nowT(),lab:$("#flb").value.trim(),nt:"",vals:{},cust:[],title:"",file:id,fn:file.name,ft:file.type,fs:file.size};f.rep.push(r);save();o.remove();render();repView(r.id)}}
 function profile(){const o=sheet(`<h3>Hi, ${esc(acct().n)}</h3><p class="mut">Your data stays on this device.</p><p class="mut" style="margin-top:4px">Dockit version 1.1.0</p><div style="margin-top:14px"><button class="btn gh" id="sw">${pro()?"Professional":"Personal"} mode · Switch</button><button class="btn dg" id="lo" style="margin-top:10px">Log out</button></div>`);
 $("#sw").onclick=()=>{o.remove();modeSheet()};$("#lo").onclick=()=>{o.remove();logout()}}
-function endSplash(){const s=$("#splash");if(!s)return;s.classList.add("hide");setTimeout(()=>s.remove(),700)}
+function endSplash(){const s=$("#splash");if(!s)return;s.classList.add("hide");setTimeout(()=>{s.remove();bars()},700)}
 $("#splash").innerHTML=`${logo(140,0).replace('class=""','class="an2"')}<h2>Dockit</h2><p>The Doctor’s Kit</p>`;
 try{const s=sessionStorage.getItem("dockit_s");if(s&&A.l.find(x=>x.id==s)){U=s;load(s)}}catch(e){}purgeTmp();
 try{const t=localStorage.getItem("dockit_theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
