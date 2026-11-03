@@ -68,7 +68,7 @@ button{font:inherit;font-weight:800;cursor:pointer;border:0;color:inherit}
 .er{color:#e43a26;font-size:13.5px;min-height:18px;margin:2px 2px 8px}
 .lgc{background:var(--card2);border-radius:30px;padding:20px;margin-top:6px;box-shadow:0 6px 0 var(--edge),0 16px 24px var(--sh)}
 #splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink);transition:opacity .6s}
-#splash.hide{opacity:0;pointer-events:none}#splash h2,#splash p{position:absolute;left:0;right:0;text-align:center}#splash h2{top:calc(50% + 105px)}#splash p{top:calc(50% + 168px)}#splash h2{font-size:46px;font-weight:900;margin:10px 0 0;letter-spacing:-1px;animation:fi 1s .9s both}#splash p{margin:2px 0 0;font-size:19px;color:var(--mut);animation:fi 1s 1.2s both}
+#splash.hide{opacity:0;pointer-events:none}#splash h2,#splash p{position:absolute;left:0;right:0;text-align:center}#splash h2{top:calc(50% + 140px)}#splash p{top:calc(50% + 203px)}.an2{animation:grow .9s cubic-bezier(.3,1.5,.5,1) both,bob2 2.4s ease-in-out .9s infinite;filter:drop-shadow(0 14px 10px rgba(0,0,0,.22))}@keyframes grow{0%{transform:scale(1)}55%{transform:scale(1.7) rotate(-8deg)}100%{transform:scale(1.5)}}@keyframes bob2{0%,100%{transform:scale(1.5)}50%{transform:scale(1.5) translateY(-6px) rotate(-3deg)}}#splash h2{font-size:46px;font-weight:900;margin:10px 0 0;letter-spacing:-1px;animation:fi 1s .9s both}#splash p{margin:2px 0 0;font-size:19px;color:var(--mut);animation:fi 1s 1.2s both}
 .an{animation:pop .8s cubic-bezier(.3,1.6,.5,1) both,bob 2.4s ease-in-out .9s infinite;filter:drop-shadow(0 14px 10px rgba(0,0,0,.22))}@keyframes pop{from{transform:scale(0) rotate(-18deg)}}@keyframes bob{50%{transform:translateY(-9px) rotate(-3deg)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
 .pw{position:relative}.pw .in{padding-right:74px}.eye{position:absolute;right:8px;top:8px;background:none;color:var(--mut);padding:8px 10px;font-size:13px}.sh h3,.fi b{word-break:break-word}
@@ -751,7 +751,7 @@ $("#ok").onclick=async()=>{if(!file){$("#fe").textContent="Please choose a file 
 function profile(){const o=sheet(`<h3>Hi, ${esc(acct().n)}</h3><p class="mut">Your data stays on this device.</p><p class="mut" style="margin-top:4px">Dockit version 1.1.0</p><div style="margin-top:14px"><button class="btn gh" id="sw">${pro()?"Professional":"Personal"} mode · Switch</button><button class="btn dg" id="lo" style="margin-top:10px">Log out</button></div>`);
 $("#sw").onclick=()=>{o.remove();modeSheet()};$("#lo").onclick=()=>{o.remove();logout()}}
 function endSplash(){const s=$("#splash");if(!s)return;s.classList.add("hide");setTimeout(()=>s.remove(),700)}
-$("#splash").innerHTML=`${logo(140,0)}<h2>Dockit</h2><p>The Doctor’s Kit</p>`;
+$("#splash").innerHTML=`${logo(140,0).replace('class=""','class="an2"')}<h2>Dockit</h2><p>The Doctor’s Kit</p>`;
 try{const s=sessionStorage.getItem("dockit_s");if(s&&A.l.find(x=>x.id==s)){U=s;load(s)}}catch(e){}purgeTmp();
 try{const t=localStorage.getItem("dockit_theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
 setTimeout(endSplash,3000);render();
