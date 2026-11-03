@@ -21,41 +21,49 @@ ul{padding-left:22px}
 a{color:var(--ac)}
 </style></head><body><main>
 <header><img src="icon-192.png" alt="Dockit logo"><div><h1>Dockit: The Doctor’s Kit<br>Privacy Policy</h1></div></header>
-<p class="mut">Last updated: 1 November 2026 · Covers Dockit accounts, medicine-reminder sync and notifications</p>
+<p class="mut">Last updated: 3 November 2026 · Covers Dockit online accounts, cloud sync and notifications</p>
 
-<div class="box"><b>In short:</b> Your health folders, notes, reports and trackers stay on your own phone. Our server holds only what is needed for your account, for password recovery, and for medicine reminders that you choose to share between a doctor and a patient. We don’t sell your data or show ads. Dockit is a notebook. It is not a medical device and does not diagnose, treat, cure or prevent any medical condition.</div>
+<div class="box"><b>In short:</b> With an online account, your Dockit data is saved on your phone <b>and</b> in your account on our server, so you can open it on any phone. It is protected in transit and in storage, but it is <b>not end-to-end encrypted</b>, which means the developer can technically access it. We don’t sell your data or show ads. You can delete everything at any time. Dockit is a notebook. It is not a medical device and does not diagnose, treat, cure or prevent any medical condition.</div>
 
 <h2>Who we are</h2>
-<p>Dockit is made by <b>[DEVELOPER NAME]</b> as a school start-up project (NEEV).<br>Contact: <b>[CONTACT EMAIL]</b></p>
-
-<h2>What stays on your phone only</h2>
-<p>These are saved in the app’s own storage on your device and are <b>not</b> sent to our server:</p>
-<ul>
-<li>Health folders, body-map marks, appointments, health numbers, vaccines and surgeries, visit notes.</li>
-<li>Mood, meal, weight, sleep and habit entries.</li>
-<li>Emergency card details, such as blood group, allergies and contacts.</li>
-<li>Reports you add, as PDF or photo files.</li>
-<li>In Professional mode, patient folders and notes that you enter.</li>
-<li>Your folder password check and app-lock setting.</li>
-</ul>
+<p>Dockit is made by <b>Dockit (NEEV school start-up project)</b>.<br>Contact: <b>dockitapp.in@gmail.com</b></p>
 
 <h2>What our server stores</h2>
+<p>When you use an online account, we store this for you:</p>
 <ul>
-<li><b>Account details:</b> your email address, your chosen display name, whether you use Personal or Professional mode, and your sign-in credentials. Your password is handled by our sign-in service and stored only in scrambled (hashed) form. We cannot read it. Your email is used to sign you in and to recover your password.</li>
-<li><b>Medicine reminders:</b> when a doctor and a patient link their accounts, the medicine plan between them is stored on our server so both can see it and so reminders can be sent. This includes medicine names, doses and times as typed by the doctor or patient, and whether a dose was marked as taken.</li>
-<li><b>Linking information:</b> which doctor and patient accounts are linked, and invite links or QR codes used to link them. Either person can unlink at any time.</li>
-<li><b>Notification token:</b> a device code that lets us send a reminder to your phone.</li>
-<li><b>Technical records:</b> basic logs kept by our hosting provider, such as sign-in time, to keep the service running and secure.</li>
+<li><b>Account details:</b> your email address, your display name, whether you use Personal or Professional mode, and your sign-in credentials. Your password is handled by our sign-in service and stored only in scrambled (hashed) form. We cannot read it. Your email is used to sign you in and to recover your password.</li>
+<li><b>Your Dockit data:</b> your health folders, body-map marks, appointments, health numbers, vaccines and surgeries, visit notes, mood, meal, weight, sleep and habit entries, emergency card details (such as blood group, allergies and contacts), medicines and dose records, and your settings. In Professional mode this also includes the patient folders and notes you enter. This is saved as one record linked to your account.</li>
+<li><b>Notification token:</b> a device code that lets us send a reminder to your phone (when reminders are switched on).</li>
+<li><b>Technical records:</b> basic logs kept by our provider, such as sign-in time, to keep the service running and secure.</li>
 </ul>
-<p>Everything else stays private on your phone. It reaches another person only if you choose to send it, as described below.</p>
+<p><b>Report files</b> (PDF or photos) that you add are, for now, kept on your phone only. If we start syncing them, we will update this policy first.</p>
+
+<h2>What is also kept on your phone</h2>
+<ul>
+<li>A copy of your data, so Dockit works offline. Changes sync when you are back online.</li>
+<li>Your report files, your folder password check and your app-lock setting.</li>
+<li>If you choose a <b>local account</b> instead of an online account, everything stays on your phone only and nothing is sent to our server.</li>
+</ul>
+
+<h2>How your data is protected, and who can see it</h2>
+<ul>
+<li>Your data is sent to our server over an encrypted connection, and our provider encrypts it while stored.</li>
+<li>It is <b>not end-to-end encrypted</b>. That means the developer can technically access the database where it is stored.</li>
+<li>We will not look at your health data except to keep Dockit working, to fix a problem you ask us to fix, or where the law requires it.</li>
+<li>Each account can read only its own data. Other users cannot see it.</li>
+<li>We don’t sell your data, and we don’t share it for advertising.</li>
+</ul>
 
 <h2>Where it is stored, and who helps us run it</h2>
 <ul>
-<li>Server data is stored with <b>[DATABASE PROVIDER]</b> in the <b>[SERVER REGION]</b> region. They process it for us to run Dockit and do not use it for their own purposes.</li>
-<li>To deliver reminders on Android, we use Google’s Firebase Cloud Messaging. It receives your notification token and the reminder text so it can reach your phone.</li>
-<li>Data is encrypted while travelling between your phone and our server, and our provider encrypts stored data.</li>
-<li>We don’t sell your data, and we don’t share it for advertising.</li>
+<li>Account and sync data is stored with <b>Supabase</b> in the <b>Mumbai, India</b> region. Supabase processes it for us to run Dockit and does not use it for its own purposes.</li>
+<li>Emails such as password reset messages are sent through our sign-in service, or an email provider that works for us.</li>
+<li>Reminder notifications (being added) are delivered with Google’s Firebase Cloud Messaging. It receives your notification token and the reminder text so it can reach your phone.</li>
+<li>The Dockit app pages are hosted on GitHub Pages. When you open Dockit, GitHub may receive your device’s IP address and basic request details, as with any website.</li>
 </ul>
+
+<h2>Doctor and patient sharing (coming soon)</h2>
+<p>When doctor–patient linking is added, a doctor can add a medicine plan to a patient’s account only after the patient agrees, using an invite code or QR code. The doctor will be able to see whether doses were taken or missed, and the patient can turn this off. Either person can unlink at any time. We will update this policy when this goes live.</p>
 
 <h2>What leaves your phone only when you choose</h2>
 <ul>
@@ -74,22 +82,24 @@ a{color:var(--ac)}
 </ul>
 
 <h2>Professional mode</h2>
-<p>If you are a doctor or other professional, patient notes you type stay on your device only. Only medicine plans you choose to link with a patient’s account go to our server. You are responsible for having permission to keep patient information and for following the rules that apply to your work. Do not store identifiable patient information on a shared or unlocked phone.</p>
+<p>If you are a doctor or other professional, the patient folders and notes you enter are saved to your account on our server, like everything else. You are responsible for having permission to keep patient information and for following the rules that apply to your work. Dockit is a new pilot, so <b>until we tell you otherwise, please use demo or dummy patient information only.</b> Do not keep identifiable patient information on a shared or unlocked phone.</p>
 
 <h2>Keeping your data safe</h2>
 <ul>
 <li>Folders open with your password and lock after 5 minutes. You can also turn on app lock.</li>
-<li>Because most of your data lives only on your phone, <b>uninstalling Dockit or clearing its data deletes it.</b> Use Backup and restore to keep a copy. Anyone who has your unlocked phone and your password can see your data, so keep both safe.</li>
+<li>On a phone that is not yours, tick <b>This is not my phone</b> when you log in. Dockit then removes your data from that phone when you log out.</li>
+<li>Anyone who has your unlocked phone and your password can see your data, so keep both safe.</li>
+<li>With a local account, <b>uninstalling Dockit or clearing its data deletes your data.</b> Use Backup and restore to keep a copy.</li>
 </ul>
 
 <h2>Keeping and deleting your data</h2>
-<p>We keep your account and reminder data for as long as your account exists. When you delete your account, we delete it.</p>
-<p><b>In the app:</b> open <b>Profile</b>, scroll down and tap <b>Delete my account and data</b>, then confirm. This deletes your account and medicine reminders from our server, and your folders and saved report files from your phone. It cannot be undone.</p>
-<p><b>Without opening the app:</b> email <b>[CONTACT EMAIL]</b> from the address on your account and ask us to delete your account. We will delete your account and the server data linked to it. Data on your phone can be removed by uninstalling Dockit or clearing its storage (Settings → Apps → Dockit → Storage → Clear data).</p>
+<p>We keep your account and data for as long as your account exists. When you delete your account, we delete it.</p>
+<p><b>In the app:</b> open <b>Profile</b>, scroll down and tap <b>Delete my account and data</b>, then confirm. This deletes your account and all your data from our server, and your folders and saved report files from your phone. It cannot be undone. Copies in our provider’s backups, if any exist, can take a short time to disappear.</p>
+<p><b>Without opening the app:</b> email <b>dockitapp.in@gmail.com</b> from the address on your account and ask us to delete your account. We will delete your account and the server data linked to it. Data on your phone can be removed by uninstalling Dockit or clearing its storage (Settings → Apps → Dockit → Storage → Clear data).</p>
 <p>You can also ask us to correct your account details, or to tell you what we hold about you, by writing to the same address.</p>
 
 <h2>Children</h2>
-<p>Dockit is not designed for children under 13. A parent or guardian should set up and supervise use by younger people.</p>
+<p>Dockit is not designed for children under 13. If you are under 18, please use Dockit only with the permission of a parent or guardian, who should help you set it up.</p>
 
 <h2>Not medical advice</h2>
 <p>Dockit does not diagnose, treat, cure or prevent any medical condition and does not check medicine doses. It does not replace a doctor. In an emergency, call your local emergency number.</p>
