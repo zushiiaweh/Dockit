@@ -9,4 +9,4 @@ jobs:
     steps:
       - name: Ping Supabase
         run: |
-          curl -fsS "https://ehhhqpeijbbjggivsaqz.supabase.co/rest/v1/profiles?select=user_id&limit=1" -H "apikey: sb_publishable_5uSpMvnMeB3mf_BU3N2aHQ_z3pskva6"
+          curl -fsS "https://ehhhqpeijbbjggivsaqz.supabase.co/rest/v1/user_data?select=user_id&limit=1" -H "apikey: sb_publishable_5uSpMvnMeB3mf_BU3N2aHQ_z3pskva6"
