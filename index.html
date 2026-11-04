@@ -209,7 +209,8 @@ const hh={};for(let i=1;i<=7;i++)hh[dA(-i)]={d:dA(-i),w:[6,8,5,8,7,4,8][i-1],m:[
 return{f:[me,dad,...pts],ap,rx,hist:hh,st:{n:3,l:dA(-1)},ys:[{id:uid(),tx:"I was so nervous about the science exhibition, but my project was appreciated by the judges.",ty:"proud",dt:dA(-20),tm:"18:30"},{id:uid(),tx:"Asking for help early saves a lot of stress. People are kinder than I expect.",ty:"lesson",dt:dA(-9),tm:"21:10"}]}}
 function load(u){D=null;try{D=JSON.parse(localStorage.getItem("dockit_d_"+u))}catch(e){}let isNew=0;if(!D||!D.f){const ac=A.l.find(x=>x.id==u);D=(ac&&ac.cloud)?{f:[],ap:[],rx:[],hist:{},st:{n:0,l:""},ys:[]}:seed();isNew=1}D.h=D.h||{d:"",w:0,m:0,b:0,e:0,s:0};D.st=D.st||{n:0,l:""};D.me=D.me||{n:"",em:null};D.rx=D.rx||[];D.ap=D.ap||[];D.ys=D.ys||[];D.bin=(D.bin||[]).filter(b=>b.dt>=addDays(iso(),-30));D.mood=D.mood||[];D.ml=D.ml||{};D.set=D.set||{lock:false};D.hist=D.hist||{};{const mf=D.f.find(k=>k.t=="Myself");if(mf&&((D.mood&&D.mood.length)||(D.ml&&Object.keys(D.ml).length))){mf.mood=(mf.mood||[]).concat(D.mood||[]);mf.ml=Object.assign(mf.ml||{},D.ml||{})}}delete D.mood;delete D.ml;D.f.forEach(f=>{f.mood=f.mood||[];f.ml=f.ml||{};f.sl=f.sl||[]})}
 const save=()=>{try{localStorage.setItem("dockit_d_"+U,JSON.stringify(D))}catch(e){}sbMark()};
-function enter(u){U=u;try{sessionStorage.setItem("dockit_s",u)}catch(e){}load(u);view={n:"home"};render();scrollTo(0,0)}
+function persistSess(){try{const a=A.l.find(x=>x.id==U);if(a&&!a.tmp){localStorage.setItem("dockit_s",U);if(SBT)localStorage.setItem("dockit_sb",JSON.stringify(SBT));else localStorage.removeItem("dockit_sb")}else{localStorage.removeItem("dockit_s");localStorage.removeItem("dockit_sb")}}catch(e){}}
+function enter(u){U=u;try{sessionStorage.setItem("dockit_s",u)}catch(e){}persistSess();load(u);view={n:"home"};render();scrollTo(0,0)}
 
 const worst=f=>f.m.length?Math.max(...f.m.map(m=>m.s)):-1,cur=()=>D.f.find(f=>f.id==view.id);
 function H(){if(D.h.d!=iso()){if(D.h.d)(D.hist=D.hist||{})[D.h.d]=D.h;D.h={d:iso(),w:0,m:0,b:0,e:0,s:0}}return D.h}
@@ -311,13 +312,13 @@ catch(e){er.textContent="Something went wrong. Please try again."}}
 /* ===== Dockit cloud: Supabase sign-in and sync (no library, plain fetch) ===== */
 const SB_URL="https://ehhhqpeijbbjggivsaqz.supabase.co",SB_KEY="sb_publishable_5uSpMvnMeB3mf_BU3N2aHQ_z3pskva6";
 let SBT=null,SBPW="",SBSTAT="",syncT=0,syncBusy=0,dv=0;
-try{SBT=JSON.parse(sessionStorage.getItem("dockit_sb")||"null")}catch(e){}
+try{SBT=JSON.parse(sessionStorage.getItem("dockit_sb")||localStorage.getItem("dockit_sb")||"null")}catch(e){}
 const isCloud=()=>{const a=A.l.find(x=>x.id==U);return !!(a&&a.cloud)};
 const revOf=id=>+localStorage.getItem("dockit_rev_"+id)||0;
 const setRev=(id,n)=>{try{localStorage.setItem("dockit_rev_"+id,n)}catch(e){}};
 const isDirty=id=>localStorage.getItem("dockit_dirty_"+id)=="1";
 const setDirty=(id,v)=>{try{v?localStorage.setItem("dockit_dirty_"+id,"1"):localStorage.removeItem("dockit_dirty_"+id)}catch(e){}};
-const sbSet=s=>{SBT=s;try{s?sessionStorage.setItem("dockit_sb",JSON.stringify(s)):sessionStorage.removeItem("dockit_sb")}catch(e){}};
+const sbSet=s=>{SBT=s;try{s?sessionStorage.setItem("dockit_sb",JSON.stringify(s)):sessionStorage.removeItem("dockit_sb")}catch(e){}try{if(localStorage.getItem("dockit_s")){s?localStorage.setItem("dockit_sb",JSON.stringify(s)):localStorage.removeItem("dockit_sb")}}catch(e){}};
 const mkSess=j=>({access_token:j.access_token,refresh_token:j.refresh_token,exp:Date.now()+(j.expires_in||3600)*1000-60000});
 const nowHM=()=>new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
 const syncTxt=()=>SBSTAT||"Synced";
@@ -376,7 +377,7 @@ try{["dockit_d_","dockit_rev_","dockit_dirty_","dockit_bak_"].forEach(k=>localSt
 A.l=A.l.filter(x=>x.id!=id);saveA()}
 function purgeTmp(){try{A.l.filter(x=>x.tmp&&x.id!=sessionStorage.getItem("dockit_s")).forEach(x=>purgeLocal(x.id))}catch(e){}}
 function logoutNow(){const a=A.l.find(x=>x.id==U);clearTimeout(syncT);U=null;SBT=null;SBPW="";
-try{["dockit_s","dockit_sb","dockit_tmp"].forEach(k=>sessionStorage.removeItem(k))}catch(e){}
+try{["dockit_s","dockit_sb","dockit_tmp"].forEach(k=>sessionStorage.removeItem(k));["dockit_s","dockit_sb"].forEach(k=>localStorage.removeItem(k))}catch(e){}
 if(a&&a.tmp)purgeLocal(a.id);render()}
 async function logout(){if(U&&isCloud()){clearTimeout(syncT);for(let i=0;i<12&&syncBusy;i++)await new Promise(r=>setTimeout(r,300));await syncNow();
 const a=acct();if(a.tmp&&isDirty(U)){ask("Log out without saving?","Some changes haven’t reached your account yet. Because this isn’t your phone, they will be lost.","Log out anyway",logoutNow);return}}
@@ -753,7 +754,7 @@ function profile(){const o=sheet(`<h3>Hi, ${esc(acct().n)}</h3><p class="mut">Yo
 $("#sw").onclick=()=>{o.remove();modeSheet()};$("#lo").onclick=()=>{o.remove();logout()}}
 function endSplash(){const s=$("#splash");if(!s)return;s.classList.add("hide");setTimeout(()=>{s.remove();bars()},700)}
 $("#splash").innerHTML=`${logo(140,0).replace('class=""','class="an2"')}<h2>Dockit</h2><p>The Doctor’s Kit</p>`;
-try{const s=sessionStorage.getItem("dockit_s");if(s&&A.l.find(x=>x.id==s)){U=s;load(s)}}catch(e){}purgeTmp();
+try{const s=sessionStorage.getItem("dockit_s")||localStorage.getItem("dockit_s");if(s&&A.l.find(x=>x.id==s)){U=s;load(s)}}catch(e){}purgeTmp();
 try{const t=localStorage.getItem("dockit_theme");if(t)document.documentElement.dataset.theme=t}catch(e){}
 setTimeout(endSplash,3000);render();
 if("serviceWorker" in navigator&&/^https?:/.test(location.protocol))window.addEventListener("load",()=>{try{navigator.serviceWorker.register("sw.js").catch(()=>{})}catch(e){}});if(U&&D&&D.set&&D.set.lock)setTimeout(lockScreen,0);handleHash();if(U&&isCloud())setTimeout(()=>{pullCheck();syncNow()},1500);
