@@ -73,7 +73,7 @@ button{font:inherit;font-weight:800;cursor:pointer;border:0;color:inherit}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
 .pw{position:relative}.pw .in{padding-right:74px}.eye{position:absolute;right:8px;top:8px;background:none;color:var(--mut);padding:8px 10px;font-size:13px}.sh h3,.fi b{word-break:break-word}
 .cp.r2{right:12px;top:76px;width:42px;padding:0}.cp svg{width:24px;height:24px}.fi span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mk>.mut{white-space:nowrap;font-size:12px}.tag{margin:8px 2px 12px;font-size:13.5px;line-height:1.4;color:var(--mut)}.tag b{color:var(--ink)}
-.stars{display:flex;gap:6px;margin:12px 0}.stars button{background:none;padding:2px}.stars svg{width:40px;height:40px;fill:var(--br)}.stars .on svg{fill:#f0b83e}
+.rvsum{font-size:18px;font-weight:800;margin:6px 0}.rvstars{color:#f0b429;letter-spacing:2px}.rvlist{max-height:46vh;overflow:auto;margin:8px 0}.rvcard{background:var(--card);border-radius:16px;padding:10px 14px;margin:8px 0}.rvcard p{margin:4px 0;word-break:break-word}.rvcard small{color:var(--mut)}input#rn{width:100%;border:0;background:var(--card);color:var(--ink);border-radius:18px;padding:12px 14px;font:inherit;margin:4px 0 0}.stars{display:flex;gap:6px;margin:12px 0}.stars button{background:none;padding:2px}.stars svg{width:40px;height:40px;fill:var(--br)}.stars .on svg{fill:#f0b83e}
 .rvl{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:4px 0 10px;padding:10px;background:none;color:var(--mut);font-size:13.5px}.rvl b{color:var(--ink);font-weight:800}
 .lk b{white-space:nowrap;flex:none}.lk .mut{flex:1;text-align:right;line-height:1.2}
 @media (max-width:350px){.lk .mut{display:none}}
@@ -424,11 +424,32 @@ const isDark=()=>{const t=document.documentElement.dataset.theme;return t?t=="da
 const STAR='<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17.4 6.1 20.7l1.3-6.6L2.5 9.5l6.6-.8z"/></svg>';
 const themeBtn=()=>`<button class="cp r2 thb" onclick="flipTheme()" aria-label="Switch light or dark mode">${isDark()?SUN:MOON}</button>`;
 function flipTheme(){document.documentElement.dataset.theme=isDark()?"light":"dark";try{localStorage.setItem("dockit_theme",document.documentElement.dataset.theme)}catch(e){}document.querySelectorAll(".thb").forEach(b=>b.innerHTML=isDark()?SUN:MOON)}
-function reviewSheet(){let r=0;const o=sheet(`<h3>Write a review</h3><p class="mut">Your feedback helps us improve Dockit. Reviews are saved with your Dockit data for now.</p><div class="stars" id="st">${[1,2,3,4,5].map(i=>`<button data-i="${i}" aria-label="${i} star">${STAR}</button>`).join("")}</div><textarea id="rt" placeholder="What do you like? What could be better?"></textarea><p class="er" id="re"></p><div class="row"><button class="btn gh" id="x">Cancel</button><button class="btn" id="ok">Submit</button></div>`);
+async function reviewSheet(){
+const o=sheet(`<h3>Reviews</h3><div id="rvb"><p class="mut">Loading…</p></div>`);
+const box=o.querySelector("#rvb");let r;
+try{r=await sbReq("/rest/v1/reviews?select=id,user_id,name,rating,body,created_at&order=created_at.desc&limit=50",{auth:false})}catch(e){r=null}
+if(!box.isConnected)return;
+if(!r||!r.ok||!Array.isArray(r.j)){box.innerHTML=`<p class="er">Couldn’t load reviews. Check your internet and try again.</p><div class="row"><button class="btn gh" id="x">Close</button></div>`;$("#x").onclick=()=>o.remove();return}
+const L=r.j,cloud=isCloud(),mine=cloud?L.find(x=>x.user_id==U):null;
+const avg=L.length?(L.reduce((a,x)=>a+x.rating,0)/L.length).toFixed(1):"";
+const stars=n=>"★".repeat(n)+"☆".repeat(5-n);
+const dt=t=>{try{return new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
+box.innerHTML=(L.length?`<p class="rvsum"><span class="rvstars">★</span> ${avg} · ${L.length} review${L.length==1?"":"s"}</p><div class="rvlist">${L.map(x=>`<div class="rvcard"><div><span class="rvstars">${stars(x.rating)}</span></div><p>${esc(x.body)}</p><small>${esc(x.name)} · ${dt(x.created_at)}</small></div>`).join("")}</div>`:`<p class="mut">No reviews yet. Be the first!</p>`)+(cloud?"":`<p class="mut">Log in with an online account to write a review.</p>`)+`<p class="er" id="re"></p><div class="row"><button class="btn gh" id="x">Close</button>${cloud?(mine?`<button class="btn" id="dl">Delete my review</button>`:`<button class="btn" id="wr">Write a review</button>`):""}</div>`;
+$("#x").onclick=()=>o.remove();
+if(mine)$("#dl").onclick=async()=>{$("#re").textContent="";let ok=false;try{ok=await sbAuthed()&&(await sbReq("/rest/v1/reviews?id=eq."+mine.id,{m:"DELETE"})).ok}catch(e){}if(!ok)return $("#re").textContent="Couldn’t delete. Check your internet and try again.";o.remove();say("Your review was deleted");reviewSheet()};
+if(cloud&&!mine)$("#wr").onclick=()=>{o.remove();writeReview()}}
+function writeReview(){let r=0;const nm=((acct().n)||"").slice(0,40);
+const o=sheet(`<h3>Write a review</h3><p class="mut">Your review is public. Everyone using Dockit can see it, with the name below. Please don’t include health details or private information.</p><div class="stars" id="st">${[1,2,3,4,5].map(i=>`<button data-i="${i}" aria-label="${i} star">${STAR}</button>`).join("")}</div><input id="rn" maxlength="40" placeholder="Name shown with your review" value="${esc(nm)}"><textarea id="rt" maxlength="500" placeholder="What do you like? What could be better?"></textarea><p class="er" id="re"></p><div class="row"><button class="btn gh" id="x">Cancel</button><button class="btn" id="ok">Post review</button></div>`);
 const paint=()=>o.querySelectorAll("#st button").forEach(b=>b.classList.toggle("on",+b.dataset.i<=r));
 o.querySelectorAll("#st button").forEach(b=>b.onclick=()=>{r=+b.dataset.i;paint()});
 $("#x").onclick=()=>o.remove();
-$("#ok").onclick=()=>{const t=$("#rt").value.trim();if(!r)return $("#re").textContent="Please tap a star rating";if(!t)return $("#re").textContent="Please write a few words";(D.rv=D.rv||[]).push({id:uid(),r,t,dt:iso()});save();o.remove();say("Thank you for your review!")}}
+$("#ok").onclick=async()=>{const t=$("#rt").value.trim(),n=$("#rn").value.trim(),er=$("#re");er.textContent="";if(!r)return er.textContent="Please tap a star rating";if(!n)return er.textContent="Please add a name";if(!t)return er.textContent="Please write a few words";
+$("#ok").disabled=true;let x=null;try{if(await sbAuthed())x=await sbReq("/rest/v1/reviews",{m:"POST",h:{Prefer:"return=minimal"},b:{user_id:U,name:n.slice(0,40),rating:r,body:t.slice(0,500)}})}catch(e){}
+$("#ok").disabled=false;
+if(!x)return er.textContent="Couldn’t post. Check your internet and try again.";
+if(x.st==409)return er.textContent="You already posted a review. Delete it first to write a new one.";
+if(!x.ok)return er.textContent="Couldn’t post your review. Please try again later.";
+o.remove();say("Thank you! Your review is now public.");reviewSheet()}}
 
 const FT=`<div class="ft2"><button class="ftt em" onclick="emSheet()"><i><svg viewBox="0 0 24 24"><path fill="#e43a26" d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/></svg></i><b>Emergency card</b><span>Blood group, allergies, contacts</span></button><button class="ftt dr" onclick="docSheet()"><i><svg viewBox="0 0 24 24"><path fill="#5aaeea" d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></i><b>Share with doctor</b><span>A clear summary</span></button></div>`;
 const BG=["A+","A−","B+","B−","O+","O−","AB+","AB−"];
