@@ -275,10 +275,68 @@ P.forEach((p,i)=>{const c="BT/F1 11 Tf 50 800 Td 17 TL "+p.map(l=>"("+l.replace(
 o.push(`<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Contents ${5+i*2} 0 R/Resources<</Font<</F1 3 0 R>>>>>>`,`<</Length ${c.length}>>stream\n${c}\nendstream`)});
 let s="%PDF-1.4\n";const x=[];o.forEach((b,i)=>{x.push(s.length);s+=`${i+1} 0 obj\n${b}\nendobj\n`});const r=s.length;
 s+=`xref\n0 ${o.length+1}\n0000000000 65535 f \n`+x.map(n=>String(n).padStart(10,"0")+" 00000 n \n").join("")+`trailer\n<</Size ${o.length+1}/Root 1 0 R>>\nstartxref\n${r}\n%%EOF`;return new Blob([s],{type:"application/pdf"})}
-async function exportPdf(){const f=cur(),L=["DOCKIT HEALTH REPORT","",`Name: ${f.n} (${f.t})${f.dob?", "+ageOf(f.dob):""}${wtOf(f)?", "+wtOf(f)+" kg":""}`,`Date: ${new Date().toLocaleDateString("en-IN")}`,`Areas marked: ${f.m.length}`,`Folder created: ${f.c?fdt(f.c):"-"}`,"------------------------------------------------------------",""];if(f.em){const e=f.em;[["Blood group",e.bg],["Allergies",e.al],["Conditions",e.co],["Medicines",e.md],["Emergency contact",[e.cn,e.cp].filter(Boolean).join(" ")],["Doctor",[e.dn,e.dp].filter(Boolean).join(" ")]].forEach(([k,v])=>v&&L.push(k+": "+v));L.push("")}
-f.m.slice().sort((a,b)=>b.s-a.s).forEach(m=>{L.push(`[${S[m.s].n.toUpperCase()}] ${m.r} (${m.side}) - ${mdtt(m)}`);(m.n||"No notes").split("\n").forEach(l=>{while(l.length>82){L.push("    "+l.slice(0,82));l=l.slice(82)}L.push("    "+l)});L.push("")});
-L.push("Demo report. Not a medical record.");let dl=null;try{dl=await claude.use("downloads")}catch(e){}
-if(!dl){try{const u=URL.createObjectURL(mkPdf(L)),a=document.createElement("a");a.href=u;a.download=f.n.replace(/\W+/g,"_")+"_report.pdf";document.body.appendChild(a);a.click();a.remove()}catch(e){toast("Couldn’t save the file here")}return}try{await dl.save({filename:f.n.replace(/\W+/g,"_")+"_report.pdf",data:mkPdf(L)})}catch(e){}}
+async function exportPdf(){const f=cur(),blob=pdfHealth(f),fn=f.n.replace(/\W+/g,"_")+"_report.pdf";let dl=null;try{dl=await claude.use("downloads")}catch(e){}
+if(!dl){try{const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove()}catch(e){toast("Couldn’t save the file here")}return}try{await dl.save({filename:fn,data:blob})}catch(e){}}
+// ---- professional PDF layout ----
+const PW=595,PH=842,PM=40,WR="278 278 355 556 556 889 667 191 333 333 389 584 278 333 278 278 556 556 556 556 556 556 556 556 556 556 278 278 584 584 584 556 1015 667 667 722 722 667 611 778 722 278 500 667 556 833 722 778 667 778 722 667 611 722 667 944 667 667 611 278 278 278 469 556 333 556 556 500 556 556 278 556 556 222 222 500 222 833 556 556 556 556 333 500 278 556 500 722 500 500 500 334 260 334 584".split(" ").map(Number),WB="278 333 474 556 556 889 722 238 333 333 389 584 278 333 278 278 556 556 556 556 556 556 556 556 556 556 333 333 584 584 584 611 975 722 722 722 722 667 611 778 722 278 556 722 611 833 722 778 667 778 722 667 611 722 667 944 667 667 611 333 278 333 584 556 333 556 611 556 611 556 333 611 611 278 278 556 278 889 611 611 611 611 389 556 333 611 556 778 556 556 500 389 280 389 584".split(" ").map(Number);
+let PDFLOGO=null;
+(function(){try{const im=new Image();im.onload=()=>{try{const c=document.createElement("canvas");c.width=c.height=200;const x=c.getContext("2d");x.fillStyle="#5cc356";x.fillRect(0,0,200,200);x.fillStyle="#fff";x.beginPath();x.arc(100,100,96,0,7);x.fill();const s=Math.min(160/im.width,160/im.height);x.drawImage(im,(200-im.width*s)/2,(200-im.height*s)/2+2,im.width*s,im.height*s);PDFLOGO={w:200,h:200,s:atob(c.toDataURL("image/jpeg",.92).split(",")[1])}}catch(e){}};im.src=CH}catch(e){}})();
+const pdfTw=(s,z,b)=>{const w=b?WB:WR;let t=0;for(const ch of String(s)){const c=ch.charCodeAt(0);t+=(c>=32&&c<=126?w[c-32]:556)}return t*z/1000};
+const pdfEnc=s=>{const M={8217:146,8216:145,8220:147,8221:148,8211:150,8212:151,8226:149,8722:45,956:181,8208:45,8209:45,8201:32,8239:32,8195:32};let o="";for(const ch of String(s)){const c=ch.codePointAt(0);if(c>=32&&c<=126)o+=ch;else if(c>=160&&c<=255)o+=ch;else if(M[c])o+=String.fromCharCode(M[c]);else if(c==8377)o+="Rs";else if(c==8805)o+=">=";else if(c==8804)o+="<=";else if(c==8594)o+="->";else if(c==9||c==10)o+=" ";else o+="?"}return o.replace(/[\\()]/g,"\\$&")};
+const pdfC=h=>{h=h.replace("#","");return[0,2,4].map(i=>(parseInt(h.substr(i,2),16)/255).toFixed(3)).join(" ")};
+const pdfLum=h=>{h=h.replace("#","");const v=[0,2,4].map(i=>parseInt(h.substr(i,2),16));return .299*v[0]+.587*v[1]+.114*v[2]};
+function PDFD(title,sub){const pg=[];let c,y,n=0;
+const d={
+t(x,yy,s,z,b,col){c.push(`BT /F${b?2:1} ${z} Tf ${pdfC(col)} rg ${x.toFixed(1)} ${yy.toFixed(1)} Td (${pdfEnc(s)}) Tj ET`)},
+tr(x,yy,s,z,b,col){d.t(x-pdfTw(s,z,b),yy,s,z,b,col)},
+rect(x,yy,w,h,col){c.push(`${pdfC(col)} rg ${x.toFixed(1)} ${yy.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)} re f`)},
+ln(x1,y1,x2,y2,col,w){c.push(`${pdfC(col)} RG ${w} w ${x1} ${y1} m ${x2} ${y2} l S`)},
+wrap(s,w,z,b){const out=[];String(s==null?"":s).split("\n").forEach(par=>{let line="";par.split(" ").forEach(word=>{while(pdfTw(word,z,b)>w&&word.length>1){let k=word.length;while(k>1&&pdfTw(word.slice(0,k),z,b)>w)k--;if(line){out.push(line);line=""}out.push(word.slice(0,k));word=word.slice(k)}const t=line?line+" "+word:word;if(pdfTw(t,z,b)<=w)line=t;else{out.push(line);line=word}});out.push(line)});return out},
+np(){c=[];pg.push(c);n++;if(n==1){d.rect(0,PH-78,PW,78,"#5cc356");if(PDFLOGO)c.push(`q 56 0 0 56 ${PM} ${PH-67} cm /Im1 Do Q`);const lx=PM+(PDFLOGO?68:0);d.t(lx,PH-38,"Dockit",24,1,"#ffffff");d.t(lx,PH-55,"The Doctor’s Kit",10,0,"#ffffff");d.tr(PW-PM,PH-34,title,15,1,"#ffffff");d.tr(PW-PM,PH-52,sub,9.5,0,"#ffffff");y=PH-78-28}else{d.rect(0,PH-28,PW,28,"#5cc356");d.t(PM,PH-18,"Dockit · "+title,9,1,"#ffffff");d.tr(PW-PM,PH-18,sub,9,0,"#ffffff");y=PH-28-28}},
+need(h){if(y-h<PM+30)d.np()},
+gap(h){y-=h},
+big(s,s2){d.need(46);d.t(PM,y,s,14,1,"#262626");y-=17;if(s2){d.t(PM,y,s2,9.5,0,"#6b6b6b");y-=10}y-=12},
+person(name,s2){d.need(70);d.rect(PM,y-44,PW-2*PM,52,"#f3f3f3");d.rect(PM,y-44,4,52,"#5cc356");d.t(PM+16,y-14,name,16,1,"#262626");d.t(PM+16,y-31,s2,9.5,0,"#6b6b6b");y-=68},
+head(t){d.need(44);y-=6;d.t(PM,y,t.toUpperCase(),10,1,"#2f8a2a");y-=7;d.ln(PM,y,PW-PM,y,"#dcdcdc",.8);y-=17},
+para(s,z,col,b){d.wrap(s,PW-2*PM,z,b).forEach(l=>{d.need(z+6);d.t(PM,y,l,z,b,col);y-=z+4.5});y-=4},
+kv(a){const cw=(PW-2*PM)/2-12;a=a.filter(x=>x[1]);for(let i=0;i<a.length;i+=2){const cells=[a[i],a[i+1]].filter(Boolean).map(x=>({k:x[0],l:d.wrap(x[1],cw,10.5,1)}));const h=14+Math.max(...cells.map(x=>x.l.length))*13+8;d.need(h);cells.forEach((cl,j)=>{const x=PM+j*(cw+24);d.t(x,y,cl.k.toUpperCase(),7.5,1,"#8a8a8a");cl.l.forEach((l,q)=>d.t(x,y-14-q*13,l,10.5,1,"#262626"))});y-=h}},
+chip(x,yy,label,col,z){z=z||8;const w=pdfTw(label,z,1)+12;d.rect(x,yy-4,w,z+7,col);d.t(x+6,yy,label,z,1,pdfLum(col)>150?"#262626":"#ffffff");return w},
+legend(a){d.need(24);let x=PM;a.forEach(([lab,col])=>{x+=d.chip(x,y,lab,col,8.5)+8});y-=26},
+item(chip,col,title,sub,notes){const ls=d.wrap(notes||"No notes",PW-2*PM-26,9.5,0),h=24+ls.length*12.5+12;d.need(Math.min(h,600));const top=y;
+const w=d.chip(PM+12,y-2,chip,col);d.t(PM+12+w+8,y-2,title,11,1,"#262626");if(sub)d.tr(PW-PM,y-2,sub,9,0,"#6b6b6b");y-=20;const y1=y;
+ls.forEach(l=>{d.need(14);d.t(PM+12,y,l,9.5,0,"#444444");y-=12.5});d.rect(PM,y+6,3,top+9-(y+6),col);y-=14},
+table(cols,rows){const tw=PW-2*PM,sum=cols.reduce((a,x)=>a+x.w,0),W=cols.map(x=>x.w/sum*tw);
+const hdr=()=>{d.need(40);d.rect(PM,y-6,tw,19,"#eeeeee");let x=PM;cols.forEach((cl,i)=>{d.t(x+6,y,cl.h.toUpperCase(),7.5,1,"#6b6b6b");x+=W[i]});y-=20};hdr();
+rows.forEach((r,ri)=>{const cells=r.map((v,i)=>v&&v.chip?{chip:v}:{l:d.wrap(v,W[i]-12,9.5,i==0).slice(0,6)});const h=Math.max(...cells.map(x=>x.chip?18:x.l.length*12.5+6))+4;
+if(y-h<PM+30){d.np();hdr()}if(ri%2)d.rect(PM,y-h+13,tw,h,"#f7f7f7");let x=PM;cells.forEach((cl,i)=>{if(cl.chip)d.chip(x+6,y-1,cl.chip.chip,cl.chip.col,7.5);else cl.l.forEach((l,q)=>d.t(x+6,y-q*12.5,l,9.5,i==0,"#262626"));x+=W[i]});y-=h});y-=6},
+blob(foot){const tot=pg.length;pg.forEach((cc,i)=>{cc.push(`${pdfC("#dcdcdc")} RG .6 w ${PM} ${PM+16} m ${PW-PM} ${PM+16} l S`);c=cc;d.t(PM,PM+4,foot,7.5,0,"#8a8a8a");d.tr(PW-PM,PM+4,"Page "+(i+1)+" of "+tot,7.5,1,"#6b6b6b")});
+const O=["<</Type/Catalog/Pages 2 0 R>>",`<</Type/Pages/Kids[${pg.map((_,i)=>(6+i*2)+" 0 R").join(" ")}]/Count ${tot}>>`,"<</Type/Font/Subtype/Type1/BaseFont/Helvetica/Encoding/WinAnsiEncoding>>","<</Type/Font/Subtype/Type1/BaseFont/Helvetica-Bold/Encoding/WinAnsiEncoding>>",PDFLOGO?`<</Type/XObject/Subtype/Image/Width ${PDFLOGO.w}/Height ${PDFLOGO.h}/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ${PDFLOGO.s.length}>>\nstream\n${PDFLOGO.s}\nendstream`:"null"];
+pg.forEach((cc,i)=>{const s=cc.join("\n");O.push(`<</Type/Page/Parent 2 0 R/MediaBox[0 0 ${PW} ${PH}]/Contents ${7+i*2} 0 R/Resources<</Font<</F1 3 0 R/F2 4 0 R>>${PDFLOGO?"/XObject<</Im1 5 0 R>>":""}>>>>`,`<</Length ${s.length}>>\nstream\n${s}\nendstream`)});
+let s="%PDF-1.4\n%\xE2\xE3\xCF\xD3\n";const x=[];O.forEach((b,i)=>{x.push(s.length);s+=`${i+1} 0 obj\n${b}\nendobj\n`});const r=s.length;
+s+=`xref\n0 ${O.length+1}\n0000000000 65535 f \n`+x.map(v=>String(v).padStart(10,"0")+" 00000 n \n").join("")+`trailer\n<</Size ${O.length+1}/Root 1 0 R>>\nstartxref\n${r}\n%%EOF`;
+const u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i)&255;return new Blob([u],{type:"application/pdf"})}};
+d.np();return d}
+const PDFFOOT="Made with Dockit. Not a medical device or a medical record. Please discuss it with your doctor.";
+const pdfDate=()=>new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+function pdfHealth(f){const d=PDFD("Health report",pdfDate());
+d.person(f.n,[f.t,f.dob?ageOf(f.dob):"",f.sx?(f.sx=="F"?"Female":"Male"):"",wtOf(f)?wtOf(f)+" kg":""].filter(Boolean).join("  ·  ")+(f.c?"   (folder started "+fdt(f.c)+")":""));
+if(f.em){const e=f.em,a=[["Blood group",e.bg],["Allergies",e.al],["Conditions",e.co],["Current medicines",e.md],["Emergency contact",[e.cn,e.cp].filter(Boolean).join("  ")],["Doctor",[e.dn,e.dp].filter(Boolean).join("  ")]].filter(x=>x[1]);if(a.length){d.head("Emergency information");d.kv(a)}}
+const ms=f.m.slice().sort((a,b)=>b.s-a.s);d.head("Areas marked on the body");
+if(ms.length){d.legend([3,2,1,0].map(i=>[ms.filter(m=>m.s==i).length+" "+S[i].n,S[i].c]).filter((x,k)=>ms.some(m=>m.s==3-k)));ms.forEach(m=>d.item(S[m.s].n,S[m.s].c,m.r+(m.side?" ("+m.side+")":""),mdtt(m),m.n))}else d.para("Nothing has been marked yet.",10,"#6b6b6b",0);
+const rx=(D.rx||[]).filter(r=>r.md==MD()&&(r.fid==f.id||(f.t=="Myself"&&!r.fid)));
+if(rx.length){d.head("Medicines");d.table([{h:"Medicine",w:30},{h:"Dose",w:18},{h:"Times",w:26},{h:"Duration",w:26}],rx.map(r=>[r.n+(r.from?" (from "+r.from+")":""),r.dose||"-",r.times.map(ft).join(", "),r.days?r.days+" days from "+fdt(r.start):"Ongoing"]))}
+const rp=(f.rep||[]).slice().sort((a,b)=>(b.dt||"").localeCompare(a.dt||""));
+if(rp.length){d.head("Reports on file");d.table([{h:"Report",w:40},{h:"Date",w:18},{h:"Lab",w:22},{h:"Values",w:20}],rp.map(r=>{let rw=[];try{rw=repRows(f,r)}catch(e){}const out=rw.filter(x=>x.fl&&x.fl!="In range").length;return[repTitle(r),fdt(r.dt),r.lab||"-",rw.length?rw.length+" values"+(out?", "+out+" outside range":""):(r.fn||"File")]}))}
+return d.blob(PDFFOOT)}
+function pdfRecord(f,r){const d=PDFD("Health record sheet",pdfDate());
+d.person(f.n,[f.dob?ageOf(f.dob):"",f.sx?(f.sx=="F"?"Female":"Male"):""].filter(Boolean).join("  ·  ")||f.t);
+d.para("SELF-ENTERED RECORD. NOT A LABORATORY REPORT.",8.5,"#e43a26",1);d.big(repTitle(r),fdt(r.dt)+(r.tm?", "+ft(r.tm):"")+(r.lab?"   ·   Lab: "+r.lab:""));
+let rw=[];try{rw=repRows(f,r)}catch(e){}
+if(rw.length){const fc=s=>/high|above|raised|elevated/i.test(s)?"#e43a26":/low|below/i.test(s)?"#ea922f":/range|normal/i.test(s)?"#5cc356":"#9a9a9a";
+d.table([{h:"Test",w:28},{h:"Result",w:18},{h:"Typical range",w:20},{h:"Status",w:16},{h:"Last time",w:18}],rw.map(x=>[x.n,x.v+(x.u?" "+x.u:""),x.rg||"-",x.fl?{chip:x.fl,col:fc(x.fl)}:"-",x.pv!==undefined?String(x.pv):"-"]))}
+if(r.nt){d.head("Note");d.para(r.nt,10,"#262626",0)}
+d.para("Self-entered record, not a laboratory report. Typical ranges vary by lab, age and sex. Ask your doctor to interpret these numbers.",8.5,"#6b6b6b",0);
+return d.blob(PDFFOOT)}
 const canSub=()=>!!(window.crypto&&crypto.subtle);
 function sha256(m){const rr=(v,a)=>(v>>>a)|(v<<(32-a)),K=[],H=[];let c=0;for(let p=2;c<64;p++){let ok=1;for(let i=2;i*i<=p;i++)if(p%i==0){ok=0;break}if(ok){if(c<8)H[c]=(Math.pow(p,.5)*4294967296)|0;K[c++]=(Math.pow(p,1/3)*4294967296)|0}}
 const E=new TextEncoder().encode(m),l=E.length,n=((l+8>>6)+1)*16,w=new Uint32Array(n);for(let i=0;i<l;i++)w[i>>2]|=E[i]<<(24-(i%4)*8);w[l>>2]|=0x80<<(24-(l%4)*8);w[n-1]=l*8;let h=H.slice();
@@ -726,7 +784,7 @@ const head=isF?`<div class="note" style="margin:0 0 10px"><b>${esc(r.fn)}</b> ·
 const sum=rw.length?`<div class="mrow" style="margin-top:10px"><div class="fi"><b>${out?out+" of "+rw.length+" values outside the typical range":"All "+rw.length+" values are in the typical range"}</b><span class="mut" style="white-space:normal">Ask your doctor what these numbers mean for you.</span></div></div>`:(canV?`<div class="empty" style="padding:14px">No values added yet. Type in the numbers from your report to track them and see them in your health snapshot.</div>`:"");
 const o=sheet(`${head}<h3>${esc(repTitle(r))}</h3><p class="mut">${esc(f.n)}${f.dob?" · "+ageOf(f.dob):""}${f.sx?" · "+(f.sx=="F"?"Female":"Male"):""}<br>${fdt(r.dt)}${r.tm?", "+ft(r.tm):""}${r.lab?" · "+esc(r.lab):""}</p>${sum}${rw.map(x=>`<div class="rrow"><div class="fi"><b>${esc(x.n)}</b><span class="mut">${x.rg?"Typical "+x.rg+" "+esc(x.u):esc(x.u)}${x.pv!==undefined?" · last time "+x.pv:""}</span></div><div class="rv"><b>${x.v}</b>${x.fl?`<span class="fl" style="background:${FC[x.fl]}">${x.fl}</span>`:""}</div></div>`).join("")}${r.nt?`<p class="note">${esc(r.nt)}</p>`:""}${gen?`<div class="row" style="margin-top:12px"><button class="btn gh" id="pdf">Save PDF</button><button class="btn" id="sh">Share</button></div>`:""}<div class="row" style="margin-top:10px">${canV?`<button class="btn gh" id="ed">${gen?"Edit":(rw.length?"Edit values":"Add values")}</button>`:""}<button class="btn dg" id="dl">Delete</button></div><button class="btn gh" id="x" style="margin-top:10px">Close</button>`);
 $("#x").onclick=()=>{o.remove();repSheet()};if($("#ed"))$("#ed").onclick=()=>{o.remove();repForm(r.ty,r.id)};
-if(gen){$("#pdf").onclick=()=>{dlFile("dockit-"+r.ty+"-report.pdf",mkPdf(repLines(f,r)));say("PDF saved")};$("#sh").onclick=()=>shareTxt(repLines(f,r).join("\n"),repTitle(r))}
+if(gen){$("#pdf").onclick=()=>{dlFile("dockit-"+r.ty+"-report.pdf",pdfRecord(f,r));say("PDF saved")};$("#sh").onclick=()=>shareTxt(repLines(f,r).join("\n"),repTitle(r))}
 if(isF)fget(r.file).then(b=>{const pv=$("#fprev");if(!pv)return;if(!b){pv.innerHTML='<p class="mut" style="margin-top:6px">This file isn’t on this phone yet. File sync is coming soon.</p>';return}const u=URL.createObjectURL(b);if((r.ft||"").startsWith("image/"))pv.innerHTML=`<img class="rimg" src="${u}" alt="Report file">`;$("#fo").onclick=()=>window.open(u,"_blank");$("#fs2").onclick=()=>dlFile(r.fn,b)}).catch(()=>{const pv=$("#fprev");if(pv)pv.innerHTML='<p class="mut" style="margin-top:6px">This file can’t be opened here.</p>'});
 let sure=0;$("#dl").onclick=function(){if(!sure){sure=1;this.textContent="Tap again to confirm";return}binIt("rep",r,f.id);f.rep=f.rep.filter(x=>x!=r);save();o.remove();render();repSheet()}}
 // ---- vaccines and surgeries
