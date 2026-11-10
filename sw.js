@@ -1,5 +1,5 @@
 // Dockit service worker. Change VERSION whenever you upload a new index.html.
-const VERSION = 'dockit-v1.5.8';
+const VERSION = 'dockit-v1.6.0';
 const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'icon-dark-192.png', 'icon-dark-512.png', 'apple-touch-icon.png', 'privacy.html', 'terms.html'];
 
 self.addEventListener('install', e => {
