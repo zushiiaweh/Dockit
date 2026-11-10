@@ -1,0 +1,16 @@
+{
+  "appId": "com.zushiiaweh.dockit",
+  "appName": "Dockit",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 800,
+      "backgroundColor": "#2f2d2d",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_INSIDE"
+    },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#3d3a3a", "overlaysWebView": false },
+    "LocalNotifications": { "smallIcon": "ic_stat_dockit", "iconColor": "#5cc356" }
+  }
+}
