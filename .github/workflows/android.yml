@@ -41,7 +41,7 @@ jobs:
             mkdir -p $R/mipmap-$d
             $IM icon-dark-1024.png -resize ${l}x${l} $R/mipmap-$d/ic_launcher.png
             $IM icon-dark-1024.png -resize ${l}x${l} $R/mipmap-$d/ic_launcher_round.png
-            $IM icon-dark-maskable-1024.png -resize ${f}x${f} $R/mipmap-$d/ic_launcher_foreground.png
+            $IM -size ${f}x${f} xc:none \( icon-dark-maskable-1024.png -resize $((f*78/100))x$((f*78/100)) \) -gravity center -composite PNG32:$R/mipmap-$d/ic_launcher_foreground.png
           done
           mkdir -p $R/mipmap-anydpi-v26 $R/values $R/drawable
           cat > $R/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
