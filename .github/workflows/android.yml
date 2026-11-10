@@ -5,7 +5,7 @@ permissions:
   contents: write
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,13 +30,18 @@ jobs:
           npx cap sync android
       - name: Icons, splash screen and colours
         run: |
+          if ! command -v magick >/dev/null 2>&1 && ! command -v convert >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y imagemagick
+          fi
+          IM=$(command -v magick || command -v convert)
           R=android/app/src/main/res
           for spec in mdpi:48:108 hdpi:72:162 xhdpi:96:216 xxhdpi:144:324 xxxhdpi:192:432; do
             IFS=: read d l f <<< "$spec"
             mkdir -p $R/mipmap-$d
-            convert icon-dark-1024.png -resize ${l}x${l} $R/mipmap-$d/ic_launcher.png
-            convert icon-dark-1024.png -resize ${l}x${l} $R/mipmap-$d/ic_launcher_round.png
-            convert icon-dark-maskable-1024.png -resize ${f}x${f} $R/mipmap-$d/ic_launcher_foreground.png
+            $IM icon-dark-1024.png -resize ${l}x${l} $R/mipmap-$d/ic_launcher.png
+            $IM icon-dark-1024.png -resize ${l}x${l} $R/mipmap-$d/ic_launcher_round.png
+            $IM icon-dark-maskable-1024.png -resize ${f}x${f} $R/mipmap-$d/ic_launcher_foreground.png
           done
           mkdir -p $R/mipmap-anydpi-v26 $R/values $R/drawable
           cat > $R/mipmap-anydpi-v26/ic_launcher.xml <<'EOF'
@@ -48,9 +53,9 @@ jobs:
           EOF
           cp $R/mipmap-anydpi-v26/ic_launcher.xml $R/mipmap-anydpi-v26/ic_launcher_round.xml
           echo '<?xml version="1.0" encoding="utf-8"?><resources><color name="ic_launcher_background">#2f2d2d</color></resources>' > $R/values/ic_launcher_background.xml
-          convert -size 1200x1200 xc:'#2f2d2d' \( icon-dark-1024.png -resize 420x420 \) -gravity center -composite splash.png
+          $IM -size 1200x1200 xc:'#2f2d2d' \( icon-dark-1024.png -resize 420x420 \) -gravity center -composite splash.png
           find $R -name 'splash.png' | while read f; do cp splash.png "$f"; done
-          convert -size 96x96 xc:none -fill white -draw "roundrectangle 36,10 60,86 6,6" -draw "roundrectangle 10,36 86,60 6,6" PNG32:$R/drawable/ic_stat_dockit.png
+          $IM -size 96x96 xc:none -fill white -draw "roundrectangle 36,10 60,86 6,6" -draw "roundrectangle 10,36 86,60 6,6" PNG32:$R/drawable/ic_stat_dockit.png
           sed -i 's|</style>|    <item name="android:statusBarColor">#3d3a3a</item>\n    <item name="android:navigationBarColor">#3d3a3a</item>\n</style>|g' $R/values/styles.xml
       - name: Permissions, links and version
         run: |
