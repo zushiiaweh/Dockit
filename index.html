@@ -536,10 +536,31 @@ return `<div class="emc dcc"><div class="emh"><span>DOCTOR CARD</span>${CROSS}</
 ${c.tm?`<small>CLINIC TIMINGS</small><div class="emnote">${esc(c.tm)}</div>`:""}
 <div class="emp" style="margin-top:8px"><div><small>PHONE</small><b>${esc(c.ph||"Not added")}</b>${call(c.ph)}</div><div><small>EMAIL</small><b>${esc(c.em||"Not added")}</b>${mail(c.em)}</div></div>
 ${c.nt?`<small>ABOUT</small><p style="margin:0;white-space:pre-wrap;word-break:break-word">${esc(c.nt)}</p>`:""}</div><div class="emf">${logo(26)}<span>Made with Dockit</span></div></div>`}
+async function dcImage(){const c=D.dc||{},W=1080,P=64,nm=c.n||acct().n||"Doctor";
+const F=(z,b)=>(b?"800 ":"600 ")+z+"px Nunito, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+const img=await new Promise(r=>{try{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=CH}catch(e){r(null)}});
+const rows=[["SPECIALITY",c.sp,1],["REGISTRATION NUMBER",c.rg,1],["CLINIC OR HOSPITAL",[c.cl,c.ad].filter(Boolean).join("\n"),0],["CLINIC TIMINGS",c.tm,0],["PHONE",c.ph,0],["EMAIL",c.em,0],["ABOUT",c.nt,0]].filter(r=>r[1]);
+const paint=(cx,H)=>{const wrap=(t,w,z,b)=>{cx.font=F(z,b);const o=[];String(t).split("\n").forEach(par=>{let l="";par.split(" ").forEach(wd=>{const x=l?l+" "+wd:wd;if(!l||cx.measureText(x).width<=w)l=x;else{o.push(l);l=wd}});o.push(l)});return o};
+const rr=(x,y,w,h,r,f)=>{cx.fillStyle=f;cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();cx.fill()};
+cx.fillStyle="#fff";cx.fillRect(0,0,W,H);cx.fillStyle="#3a9bd9";cx.fillRect(0,0,W,170);cx.textBaseline="alphabetic";cx.fillStyle="#fff";cx.font=F(54,1);cx.fillText("DOCTOR CARD",P,108);
+cx.beginPath();cx.arc(W-P-55,85,62,0,7);cx.fillStyle="#fff";cx.fill();if(img)cx.drawImage(img,W-P-55-46,85-46,92,92);
+let y=262;cx.fillStyle="#262626";wrap(nm,W-2*P,70,1).forEach(l=>{cx.font=F(70,1);cx.fillText(l,P,y);y+=82});
+if(c.ql){cx.fillStyle="#6b6b6b";cx.font=F(40,0);cx.fillText(c.ql,P,y);y+=60}y+=34;
+rows.forEach(([lab,val,chips])=>{cx.fillStyle="#8a8a8a";cx.font=F(28,1);cx.fillText(lab,P,y);y+=52;
+if(chips){let x=P;String(val).split(/[,\n]/).map(t=>t.trim()).filter(Boolean).forEach(t=>{cx.font=F(38,1);const w=cx.measureText(t).width+48;if(x+w>W-P){x=P;y+=84}rr(x,y-44,w,64,32,"#eef1f4");cx.fillStyle="#262626";cx.fillText(t,x+24,y);x+=w+16});y+=68}
+else{cx.fillStyle="#262626";wrap(val,W-2*P,40,1).forEach(l=>{cx.font=F(40,1);cx.fillText(l,P,y);y+=54})}y+=38});
+y+=10;cx.fillStyle="#f3f3f3";cx.fillRect(0,y,W,110);cx.fillStyle="#6b6b6b";cx.font=F(32,1);cx.fillText("Made with Dockit",P,y+68);return y+110};
+const t=document.createElement("canvas");t.width=W;t.height=4000;const H=paint(t.getContext("2d"),4000);
+const cv=document.createElement("canvas");cv.width=W;cv.height=H;paint(cv.getContext("2d"),H);
+return new Promise(r=>cv.toBlob(r,"image/png"))}
+async function shareDc(){const b=await dcImage(),name="doctor-card.png";
+if(await saveBlob(b,name))return;
+try{const f=new File([b],name,{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Doctor card"});return}}catch(e){if(/abort|cancel/i.test(String(e&&(e.name||e.message))))return}
+const u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove()}
 function dcSheet(){const c=D.dc||{},has=Object.values(c).some(Boolean);
 const o=sheet((has?"":`<p class="mut" style="margin:0 0 10px">Fill this in once. It is your professional card: your name, speciality, clinic and contact details. Share it with patients when you like.</p>`)+dcHtml()+`<div class="row" style="margin-top:14px"><button class="btn gh" id="x">Close</button>${has?`<button class="btn gh" id="sh">Share</button>`:""}<button class="btn" id="ed">${has?"Edit":"Add info"}</button></div>`);
 $("#x").onclick=()=>o.remove();$("#ed").onclick=()=>{o.remove();dcEdit()};
-if(has)$("#sh").onclick=()=>shareTxt(["Dr. "+(c.n||acct().n||"").replace(/^dr\.?\s*/i,""),[c.sp,c.ql].filter(Boolean).join(" · "),c.rg?"Registration no.: "+c.rg:"",c.cl,c.ad,c.tm?"Timings: "+c.tm:"",c.ph?"Phone: "+c.ph:"",c.em?"Email: "+c.em:"","Shared from Dockit"].filter(Boolean).join("\n"),"Doctor card")}
+if(has)$("#sh").onclick=()=>shareDc()}
 function dcEdit(){const c=D.dc||{},v=k=>esc(c[k]||"");
 const o=sheet(`<h3>Doctor card</h3><p class="mut">Saved in your Dockit account. You choose when to share it.</p><p class="lb">Your name</p><input class="in" id="d0" placeholder="Full name" value="${esc(c.n||acct().n||"")}"><p class="lb">Speciality</p><input class="in" id="d1" placeholder="e.g. General physician, Diabetes" value="${v("sp")}"><p class="lb">Qualifications</p><input class="in" id="d2" placeholder="e.g. MBBS, MD" value="${v("ql")}"><p class="lb">Registration number</p><input class="in" id="d3" placeholder="Medical council registration no." value="${v("rg")}"><p class="lb">Clinic or hospital</p><input class="in" id="d4" placeholder="Name" value="${v("cl")}"><textarea id="d5" style="height:70px" placeholder="Address">${v("ad")}</textarea><p class="lb">Phone</p><input class="in" id="d6" type="tel" placeholder="Phone number" value="${v("ph")}"><p class="lb">Email</p><input class="in" id="d7" type="email" placeholder="Email address" value="${v("em")}"><p class="lb">Clinic timings</p><textarea id="d8" style="height:70px" placeholder="e.g. Mon to Sat, 10 am to 1 pm and 5 pm to 8 pm">${v("tm")}</textarea><p class="lb">About (optional)</p><textarea id="d9" style="height:70px" placeholder="A short note for patients">${v("nt")}</textarea><div class="row"><button class="btn gh" id="x">Cancel</button><button class="btn" id="ok">Save</button></div>`);
 $("#x").onclick=()=>o.remove();
@@ -563,7 +584,7 @@ const mdtt=m=>mdt(m)+(m.tm?", "+ft(m.tm):"");
 const pro=()=>D.mode=="pro",FL=()=>D.f.filter(f=>pro()?f.t=="Patient":f.t=="Myself"),MD=()=>pro()?"pro":"personal";
 const myF=()=>{let f=D.f.find(k=>k.t=="Myself");if(!f){f={id:uid(),n:"My folder",t:"Myself",c:iso(),ct:nowT(),m:[]};D.f.push(f);save()}return f};
 const addDays=(d,n)=>{const x=new Date(d+"T00:00");x.setDate(x.getDate()+n);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
-const dlFile=async(n,b)=>{if(await saveBlob(b,n))return;const u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},1500)};
+const dlFile=async(n,b)=>{if(await saveDownload(b,n))return;if(await saveBlob(b,n))return;const u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},1500)};
 const icsT=s=>String(s||"").replace(/\\/g,"\\\\").replace(/[;,]/g,m=>"\\"+m).replace(/\n/g,"\\n");
 function icsEv(e){const p=x=>String(x).padStart(2,"0"),tm=e.tm||"09:00",en=new Date(e.dt+"T"+tm+":00");en.setMinutes(en.getMinutes()+(e.len||60));
 const f=d=>d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"T"+p(d.getHours())+p(d.getMinutes())+"00",st=new Date(e.dt+"T"+tm+":00");
@@ -747,6 +768,8 @@ const lkCard=()=>{if(!isCloud())return `<p class="note">To link with a doctor, l
 // ---- Android app (Capacitor) support ----
 const CAPN=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
 const CP=n=>(CAPN&&Capacitor.Plugins&&Capacitor.Plugins[n])||null;
+const blobB64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(blob)});
+async function saveDownload(blob,name){const DL=CP("Downloader");if(!DL)return false;try{await DL.save({name,mime:blob.type||"application/octet-stream",data:await blobB64(blob)});toast("Saved in Downloads: "+name);return true}catch(e){return false}}
 async function saveBlob(blob,name){const FS=CP("Filesystem"),SH=CP("Share");if(!(CAPN&&FS&&SH))return false;
 try{const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(blob)});
 const w=await FS.writeFile({path:name,data:b64,directory:"CACHE"});await SH.share({title:name,url:w.uri,dialogTitle:"Save or send "+name});return true}catch(e){return/cancel/i.test(String(e&&(e.message||e)))}}
