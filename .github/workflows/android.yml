@@ -28,6 +28,87 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+      - name: Add the Downloads helper
+        run: |
+          D=android/app/src/main/java/com/zushiiaweh/dockit
+          mkdir -p $D
+          cat > $D/DownloaderPlugin.java <<'EOF'
+          package com.zushiiaweh.dockit;
+
+          import android.content.ContentValues;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Environment;
+          import android.provider.MediaStore;
+          import android.util.Base64;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import java.io.File;
+          import java.io.FileOutputStream;
+          import java.io.OutputStream;
+
+          @CapacitorPlugin(name = "Downloader")
+          public class DownloaderPlugin extends Plugin {
+            @PluginMethod
+            public void save(PluginCall call) {
+              String name = call.getString("name");
+              String mime = call.getString("mime", "application/octet-stream");
+              String data = call.getString("data");
+              if (name == null || data == null) {
+                call.reject("Missing name or data");
+                return;
+              }
+              try {
+                byte[] bytes = Base64.decode(data, Base64.DEFAULT);
+                JSObject r = new JSObject();
+                if (Build.VERSION.SDK_INT >= 29) {
+                  ContentValues v = new ContentValues();
+                  v.put(MediaStore.Downloads.DISPLAY_NAME, name);
+                  v.put(MediaStore.Downloads.MIME_TYPE, mime);
+                  v.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                  Uri uri = getContext().getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
+                  if (uri == null) {
+                    call.reject("Could not create the file");
+                    return;
+                  }
+                  OutputStream os = getContext().getContentResolver().openOutputStream(uri);
+                  os.write(bytes);
+                  os.close();
+                  r.put("uri", uri.toString());
+                } else {
+                  File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                  dir.mkdirs();
+                  File f = new File(dir, name);
+                  FileOutputStream fo = new FileOutputStream(f);
+                  fo.write(bytes);
+                  fo.close();
+                  r.put("uri", f.getAbsolutePath());
+                }
+                r.put("name", name);
+                call.resolve(r);
+              } catch (Exception e) {
+                call.reject("Save failed: " + e.getMessage());
+              }
+            }
+          }
+          EOF
+          cat > $D/MainActivity.java <<'EOF'
+          package com.zushiiaweh.dockit;
+
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+            @Override
+            public void onCreate(Bundle savedInstanceState) {
+              registerPlugin(DownloaderPlugin.class);
+              super.onCreate(savedInstanceState);
+            }
+          }
+          EOF
       - name: Icons, splash screen and colours
         run: |
           if ! command -v magick >/dev/null 2>&1 && ! command -v convert >/dev/null 2>&1; then
