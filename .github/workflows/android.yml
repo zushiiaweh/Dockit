@@ -28,6 +28,10 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+      - name: Add the QR scanner
+        run: |
+          npm install @capacitor-mlkit/barcode-scanning@6
+          npx cap sync android
       - name: Add the Downloads helper
         run: |
           D=android/app/src/main/java/com/zushiiaweh/dockit
