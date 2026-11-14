@@ -163,29 +163,64 @@ jobs:
           assert "</manifest>" in s and "</activity>" in s
           s = s.replace("</activity>", link + "</activity>", 1)
           s = s.replace("</manifest>", perms + "</manifest>", 1)
+          # Health data: do not let Android copy app data into cloud/adb backups
+          s = s.replace('android:allowBackup="true"', 'android:allowBackup="false"')
           open(p, "w", encoding="utf-8").write(s)
           PY
           RUN=${{ github.run_number }}
           sed -i "s/versionCode 1/versionCode $RUN/; s/versionName \"1.0\"/versionName \"1.0.$RUN\"/" android/app/build.gradle
-      - name: Saved signing key (optional)
+      - name: Release signing key
         env:
-          KS: ${{ secrets.DEBUG_KEYSTORE_B64 }}
+          KS: ${{ secrets.KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          if [ -n "$KS" ]; then
-            mkdir -p ~/.android
-            echo "$KS" | base64 -d > ~/.android/debug.keystore
-            echo "Using the saved signing key"
-          else
-            echo "No saved signing key, using a new one"
+          if [ -z "$KS" ] || [ -z "$KS_PASS" ] || [ -z "$KS_ALIAS" ]; then
+            echo "::error::Missing secrets. Add KEYSTORE_BASE64, KEYSTORE_PASSWORD and KEY_ALIAS under Settings > Secrets and variables > Actions."
+            exit 1
           fi
+          echo "$KS" | base64 -d > "$RUNNER_TEMP/dockit-release.jks"
+          echo "KS_PATH=$RUNNER_TEMP/dockit-release.jks" >> "$GITHUB_ENV"
+          # Fails here, with a clear message, if the password or alias is wrong
+          keytool -list -keystore "$RUNNER_TEMP/dockit-release.jks" -storepass "$KS_PASS" -alias "$KS_ALIAS" > /dev/null
+          echo "Signing key OK"
+      - name: Wire up release signing
+        run: |
+          python3 - <<'PY'
+          import re
+          p = "android/app/build.gradle"
+          g = open(p, encoding="utf-8").read()
+          signing = (
+              '    signingConfigs {\n'
+              '        release {\n'
+              '            storeFile file(System.getenv("KS_PATH"))\n'
+              '            storePassword System.getenv("KS_PASS")\n'
+              '            keyAlias System.getenv("KS_ALIAS")\n'
+              '            keyPassword System.getenv("KS_PASS")\n'
+              '        }\n'
+              '    }\n'
+          )
+          assert "buildTypes {" in g, "buildTypes block not found in build.gradle"
+          g = g.replace("buildTypes {", signing + "    buildTypes {", 1)
+          g, n = re.subn(r'(buildTypes\s*\{\s*release\s*\{)', r'\1\n            signingConfig signingConfigs.release', g, count=1)
+          assert n == 1, "release block not found in build.gradle"
+          open(p, "w", encoding="utf-8").write(g)
+          PY
       - name: Build the APK
         working-directory: android
+        env:
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleRelease --no-daemon
+      - name: Check the signature
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk dockit.apk
+          BT=$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)
+          "$ANDROID_HOME/build-tools/$BT/apksigner" verify --print-certs dockit.apk || echo "Could not run apksigner check"
       - name: Publish the APK
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk dockit.apk
           gh release create "v${{ github.run_number }}" dockit.apk --title "Dockit app v${{ github.run_number }}" --notes "Android app build ${{ github.run_number }}" --latest
